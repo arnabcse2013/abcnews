@@ -1,0 +1,11 @@
+name: Url Restrictions
+type: module
+description: 'This module will restrict the drupal default url such as node/*,taxonomy/* and user/* for the entity type.'
+core: 8.x
+core_version_requirement: ^8 || ^9
+configure: url_restrictions.config.form
+
+# Information added by Drupal.org packaging script on 2020-05-22
+version: '8.x-2.0'
+project: 'url_restrictions'
+datestamp: 1590159522

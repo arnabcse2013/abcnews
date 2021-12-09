@@ -1,0 +1,23 @@
+googlelogin.settings:
+  type: config_object
+  label: 'Google OAuth Login settings'
+  mapping:
+    google_api_client_id:
+      type: text
+      label: 'Google Api Client ID'
+googlelogin.icon.settings:
+  type: config_object
+  label: 'Google Login Icon settings'
+  mapping:
+    display:
+      type: int
+      label: 'Display Settings'
+    display_url:
+      type: text
+      label: 'Direct URL'
+    show_on_login_form:
+      type: boolean
+      label: 'Show sign-in button on Login Form'
+    width:
+      type: string
+      label: 'Width of the button/icon'

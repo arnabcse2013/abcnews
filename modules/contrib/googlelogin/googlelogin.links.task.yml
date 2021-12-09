@@ -1,0 +1,10 @@
+googlelogin.home:
+  title: Google OAuth Configurations
+  route_name: googlelogin.admin_config
+  base_route: googlelogin.admin_config
+  weight: 10
+googlelogin.view:
+  route_name: googlelogin.icon_view
+  base_route: googlelogin.admin_config
+  title: 'Google Icon View'
+  weight: 20

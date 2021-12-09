@@ -1,0 +1,15 @@
+services:
+  google_api_client.client:
+    class: Drupal\google_api_client\Service\GoogleApiClientService
+    arguments: ['@logger.factory', '@cache.default', '@messenger', '@string_translation', '@config.factory', '@module_handler']
+
+  google_api_service_client.client:
+    class: Drupal\google_api_client\Service\GoogleApiServiceClientService
+    arguments: ['@logger.factory', '@cache.default', '@messenger', '@string_translation', '@config.factory']
+
+  cache.google_api_client_scopes:
+    class: Drupal\Core\Cache\CacheBackendInterface
+    tags:
+      - { name: cache.bin }
+    factory: cache_factory:get
+    arguments: [google_api_client_scopes]

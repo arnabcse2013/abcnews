@@ -1,0 +1,199 @@
+<?php
+/**
+ * @file
+ * Google OAuth Login.
+ */
+
+use Drupal\Component\Serialization\Json;
+use Drupal\Core\Session\AccountInterface;
+use Drupal\Core\Url;
+use Symfony\Component\HttpFoundation\Request;
+use Drupal\Core\Routing\RouteMatchInterface;
+use Symfony\Component\HttpFoundation\RedirectResponse;
+use Drupal\Core\Access\AccessResult;
+use Drupal\user\Entity\User;
+
+/**
+ * Implements hook_help().
+ */
+function googlelogin_help($route_name, \Drupal\Core\Routing\RouteMatchInterface $route_match) {
+  switch ($route_name) {
+    case 'help.page.googlelogin':
+      $path = $GLOBALS['base_url'] . '/' . drupal_get_path('module', 'googlelogin');
+      $output = '<h3>' . t('About') . '</h3>';
+      $output .= '<p>' . t("This module allows admin to configure google login, so that user's can login using google.") . '</p>';
+      $output .= t('You can read more in <a href=\'@url\'>README.txt</a>', array('@url' => "$path/README.txt"));
+      return $output;
+  }
+}
+
+/**
+ * Implements hook_google_api_client_state_alter().
+ *
+ * @param $state
+ * @param $google_api_client
+ */
+function googlelogin_google_api_client_state_alter(&$state, $google_api_client) {
+  $google_login_client_id = \Drupal::config('googlelogin.settings')->get('google_api_client_id');
+  if ($google_api_client->getId() == $google_login_client_id && $google_api_client->getEntityTypeId() == 'google_api_client') {
+    // We change the source so that google api client will ignore the response.
+    // And will let us handle the request.
+    $state['src'][0] = 'googlelogin';
+  }
+}
+
+/**
+ * Implements hook_google_api_client_google_response().
+ *
+ * @param Request $request
+ */
+function googlelogin_google_api_client_google_response(Request $request) {
+  $state = $request->get('state');
+  if ($state) {
+    $state = Json::decode($state);
+    // Handle response only if the request was from googlelogin.
+    if (isset($state['src']) && in_array('googlelogin', $state['src'])) {
+      if ($request->get('code')) {
+        $tempStore = \Drupal::service('tempstore.private')->get('google_api_client');
+        $entity_type = $tempStore->get('account_type');
+        $entity_id = $tempStore->get('account_id');
+        $google_api_client = \Drupal::entityTypeManager()->getStorage($entity_type)->load($entity_id);
+        $google_api_service = \Drupal::service('google_api_client.client');
+        $google_api_service->setGoogleApiClient($google_api_client);
+        $creds = $google_api_service->googleClient->fetchAccessTokenWithAuthCode($request->get('code'));
+        $destination = FALSE;
+        if (isset($creds['access_token'])) {
+          $google_oauthV2 = new Google_Service_Oauth2($google_api_service->googleClient);
+          $userInfo = $google_oauthV2->userinfo->get();
+          $tempStore = \Drupal::service('tempstore.private')->get('google_api_client');
+          if ($tempStore->get('state_destination')) {
+            $destination = $tempStore->get('state_destination');
+            $tempStore->delete('state_destination');
+          }
+          googlelogin_user_exist($userInfo);
+          $_SESSION['google_oauth_token'] = $creds;
+        }
+
+        if ($destination) {
+          $redirect = new RedirectResponse(Url::fromUserInput($destination)->toString());
+        }
+        else {
+          $redirect = new RedirectResponse('<front>');
+        }
+        $redirect->send();
+      }
+    }
+  }
+}
+
+/**
+ * Implements hook_google_api_client_authenticate_account_access().
+ *
+ * @param $google_api_client_id
+ * @param $google_api_client_type
+ * @param AccountInterface $user_account
+ */
+function googlelogin_google_api_client_authenticate_account_access($google_api_client_id, $google_api_client_type, AccountInterface $user_account) {
+  $google_login_client_id = \Drupal::config('googlelogin.settings')->get('google_api_client_id');
+  if ($google_api_client_id == $google_login_client_id && $google_api_client_type == 'google_api_client' && $user_account->isAnonymous()) {
+    return AccessResult::allowed();
+  }
+}
+
+function googlelogin_user_exist($userInfo) {
+  $email    = $userInfo['email'];
+  $userData = user_load_by_mail($email);
+  if (empty($userData)) {
+    $language = \Drupal::languageManager()->getCurrentLanguage()->getId();
+    $user = User::create();
+
+    //Mandatory settings.
+    $user->setPassword(FALSE);
+    $user->enforceIsNew();
+    $user->setEmail($email);
+    $user->setUsername($email);
+
+    //Optional settings.
+    $user->set("init", 'email');
+    $user->set("langcode", $language);
+    $user->set("preferred_langcode", $language);
+    $user->set("preferred_admin_langcode", $language);
+    $user->activate();
+    //Save user.
+    $user->save();
+    user_login_finalize($user);
+  }
+  else {
+    user_login_finalize($userData);
+  }
+}
+
+function googlelogin_login_button_code($google_api_client_id = NULL) {
+  $iconUrl = '';
+  $config = \Drupal::configFactory();
+  if ($google_api_client_id == NULL) {
+    $google_api_client_id = $config->get('googlelogin.settings')->get('google_api_client_id');
+  }
+  if (!$google_api_client_id) {
+    return '';
+  }
+
+  $destination = \Drupal::request()->get('destination');
+  if (!$destination) {
+    $destination = \Drupal::request()->getRequestUri();
+  }
+  $authUrl = Url::fromRoute('google_api_client.callback', ['id' => $google_api_client_id, 'destination' => $destination])->toString();
+//  $authUrl = Url::fromRoute('google_api_client.callback', ['id' => $google_api_client_id])->toString();
+
+  $display = $config->get('googlelogin.icon.settings')->get('display');
+  $display_url = $config->get('googlelogin.icon.settings')->get('display_url');
+
+  $path = drupal_get_path('module', 'googlelogin');
+
+  if (isset($display_url) && $display_url != '') {
+    $iconUrl = '<img src = ' . $display_url . ' />';
+  }
+  else {
+    global $base_url;
+    $width = $config->get('googlelogin.icon.settings')->get('width');
+    if ($display == 0) {
+      $iconUrl = '<img src = "' . $base_url . '/' . $path . '/images/google-login.png" border="0" width="' . $width . '">';
+    }
+    if ($display == 1) {
+      $iconUrl = '<img src = "' . $base_url . '/' . $path . '/images/google-signin.png" border="0" width="' . $width . '">';
+    }
+    if ($display == 2) {
+      $iconUrl = '<img src = "' . $base_url . '/' . $path . '/images/google-sign-in.png" border="0" width="' . $width . '">';
+    }
+  }
+
+  return '<a href="' . $authUrl . '" class="googlelogin_button">' . $iconUrl . '</a>';
+}
+
+/**
+ * Implements hook_form_alter().
+ */
+function googlelogin_form_alter(&$form, \Drupal\Core\Form\FormStateInterface $form_state, $form_id) {
+  if ($form_id == 'user_login_form'  && \Drupal::config('googlelogin.icon.settings')->get('show_on_login_form')) {
+    $output = googlelogin_login_button_code();
+    if ($output) {
+      $form['#attached']['library'][] = 'googlelogin/googlelogin';
+      $form['google_oauth_login'] = [
+        '#markup' => $output,
+        '#weight' => 1000,
+        '#cache' => [
+          'max-age' => 0,
+        ],
+      ];
+    }
+  }
+}
+
+/**
+ * Implements hook_preprocess_HOOK()
+ */
+function googlelogin_preprocess_block(&$variables) {
+  if ($variables['plugin_id'] == 'google_oauth_login_block') {
+    $variables['#attached']['library'][] = 'googlelogin/googlelogin';
+  }
+}

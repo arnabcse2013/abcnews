@@ -1,0 +1,4 @@
+url_restrictions.config.form:
+  title: 'Url Restrictions'
+  parent: system.admin_config
+  route_name: url_restrictions.config.form

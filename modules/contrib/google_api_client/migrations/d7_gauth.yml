@@ -1,0 +1,20 @@
+id: d7_gauth
+label: Google Api Client accounts
+migration_tags:
+  - Google Api Client
+source:
+  plugin: gauth
+process:
+  id: id
+  name: name
+  developer_key: developer_key
+  client_id: client_id
+  client_secret: client_secret
+  services: services
+  access_token: access_token
+  access_type: access_type
+  is_authenticated: is_authenticated
+  uid: uid
+  scopes: service_scopes
+destination:
+  plugin: entity:google_api_client

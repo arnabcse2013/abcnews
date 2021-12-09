@@ -1,0 +1,10 @@
+{
+    "name": "drupal/googlelogin",
+    "description": "Google OAuth Login",
+    "type": "drupal-module",
+    "minimum-stability": "dev",
+    "require": {
+        "php": ">=7.2.0",
+        "drupal/google_api_client": "^3.0"
+    }
+}

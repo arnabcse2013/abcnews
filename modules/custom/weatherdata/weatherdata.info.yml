@@ -1,0 +1,5 @@
+name: Weather Information
+description: A Listing for Weather details.
+core: 8.x
+package: Custom
+type: module

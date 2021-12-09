@@ -1,0 +1,14 @@
+services:
+  pages_restriction.event_subscriber:
+    class: Drupal\pages_restriction\Event\PagesRestrictionSubscriber
+    arguments: ['@config.factory', '@request_stack', '@path.matcher', '@pages_restriction.helper', '@current_user', '@session', '@path.current', '@path_alias.manager']
+    tags:
+      - { name: event_subscriber, priority: 210}
+
+  pages_restriction.helper:
+    class: Drupal\pages_restriction\Service\PagesRestrictionHelper
+    arguments: []
+
+  pages_restriction.session_service:
+    class: Drupal\pages_restriction\Service\PagesRestrictionSessionService
+    arguments: ['@session']

@@ -1,0 +1,26 @@
+diff --git a/src/Service/GoogleApiClientService.php b/src/Service/GoogleApiClientService.php
+index 92e6899..499076e 100644
+--- a/src/Service/GoogleApiClientService.php
++++ b/src/Service/GoogleApiClientService.php
+@@ -102,7 +102,7 @@ class GoogleApiClientService {
+    *
+    * @param \Drupal\google_api_client\GoogleApiClientInterface $google_api_client
+    *   Pass completely loaded GoogleApiClient object.
+-   * @param \Google_Client $googleClient
++   * @param \Google_Client|NULL $googleClient
+    *   Optionally parameter for developers who want to set initial
+    *   google client object.
+    *
+diff --git a/src/Service/GoogleApiServiceClientService.php b/src/Service/GoogleApiServiceClientService.php
+index aa76f55..30a2d47 100644
+--- a/src/Service/GoogleApiServiceClientService.php
++++ b/src/Service/GoogleApiServiceClientService.php
+@@ -91,7 +91,7 @@ class GoogleApiServiceClientService {
+    *
+    * @param \Drupal\google_api_client\GoogleApiServiceClientInterface $google_api_client
+    *   Pass completely loaded GoogleApiClient object.
+-   * @param \Google_Client $googleClient
++   * @param \Google_Client|NULL $googleClient
+    *   Optionally parameter for developers who want to set initial
+    *   google client object.
+    *

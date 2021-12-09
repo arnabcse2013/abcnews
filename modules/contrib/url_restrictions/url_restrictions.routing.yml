@@ -1,0 +1,7 @@
+url_restrictions.config.form:
+  path: '/admin/config/url-restrictions'
+  defaults:
+    _form: '\Drupal\url_restrictions\Form\UrlRestrictionsSettingsForm'
+    _title: 'Url Restrictions'
+  requirements:
+    _permission: 'Edit Url Restrictions Settings'

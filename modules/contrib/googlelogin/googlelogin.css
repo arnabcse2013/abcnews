@@ -1,0 +1,5 @@
+a.googlelogin_button,
+a.googlelogin_button :hover {
+  text-decoration: none;
+  border: none !important;
+}

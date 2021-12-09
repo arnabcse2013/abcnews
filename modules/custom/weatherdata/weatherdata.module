@@ -1,0 +1,19 @@
+<?php
+
+function weatherdata_menu() {
+	$items = array();
+	// The paths given here need to match the ones in example.routing.yml exactly.
+	$items['/mypage/secured-area'] = array(
+		'title' => 'First page',
+		'description' => 'This is a example page.',
+		'route' => 'weatherdata.my_page',
+	);
+	
+	return $items;
+}
+
+function weatherdata_page_attachments(array &$attachments) {
+	$attachments['#attached']['library'][] = 'weatherdata/weatherdata-information';
+}
+
+

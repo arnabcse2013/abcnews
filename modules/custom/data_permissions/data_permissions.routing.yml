@@ -1,0 +1,31 @@
+data_permissions.overview:
+  path: '/data-permissions'
+  defaults:
+    _controller: '\Drupal\data_permissions\Controller\DataPermissionsPageController::overviewPage'
+    _title: 'Data Permissions Page Title'
+  requirements:
+    _permission: 'access content'
+
+data_permissions.level1:
+  path: '/data-permissions/level1'
+  defaults:
+    _controller: '\Drupal\data_permissions\Controller\DataPermissionsPageController::level1Page'
+    _title: 'Data Permissions Level 1'
+  requirements:
+    _permissions: 'data permission 1'
+
+data_permissions.level2:
+  path: '/data-permissions/level2'
+  defaults:
+    _controller: '\Drupal\data_permissions\Controller\DataPermissionsPageController::level2Page'
+    _title: 'Data Permissions Level 2'
+  requirements:
+    _permissions: 'data permission 2'
+
+data_permissions.level3:
+  path: '/data-permissions/level3'
+  defaults:
+    _controller: '\Drupal\data_permissions\Controller\DataPermissionsPageController::level3Page'
+    _title: 'Data Permissions Level 3'
+  requirements:
+    _permissions: 'data permission 3'

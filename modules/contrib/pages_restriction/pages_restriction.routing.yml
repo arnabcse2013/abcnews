@@ -1,0 +1,7 @@
+pages_restriction.settings:
+  path: '/admin/config/development/pages-restriction/settings'
+  defaults:
+    _title: 'Pages Restriction Settings'
+    _form: 'Drupal\pages_restriction\Form\PagesRestrictionSettingsForm'
+  requirements:
+    _permission: 'administer site configuration'

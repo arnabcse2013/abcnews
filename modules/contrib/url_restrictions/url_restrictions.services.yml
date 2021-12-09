@@ -1,0 +1,6 @@
+services:
+  url_restrictions:
+    class: '\Drupal\url_restrictions\EventSubscriber\UrlRestrictions'
+    arguments: ['@current_user', '@config.factory' , '@request_stack' , '@language_manager' , '@path.matcher' , '@current_route_match']
+    tags:
+      - { name: 'event_subscriber' }

@@ -1,0 +1,16 @@
+google-api-php-client:
+  remote: http://code.google.com/p/google-api-php-client
+  version: 2.4.1
+  license:
+    name: 'Apache License'
+    gpl-compatible: false
+  php:
+    libraries/google-api-php-client/vendor/autoload.php: {}
+  dependencies:
+    -
+google_api_client.add_client:
+  version: VERSION
+  js:
+    js/google_api_client_add.js: {}
+  dependencies:
+    - core/jquery

@@ -1,0 +1,21 @@
+
+google_api_client.settings_tab:
+  route_name: google_api_client.google_api_client_settings
+  title: Google Api Client Settings
+  base_route: google_api_client.google_api_client_settings
+
+google_api_client.view:
+  route_name: entity.google_api_client.canonical
+  base_route: entity.google_api_client.canonical
+  title: View
+
+google_api_client.page_edit:
+  route_name: entity.google_api_client.edit_form
+  base_route: entity.google_api_client.canonical
+  title: Edit
+
+google_api_client.delete_confirm:
+  route_name:  entity.google_api_client.delete_form
+  base_route:  entity.google_api_client.canonical
+  title: Delete
+  weight: 10

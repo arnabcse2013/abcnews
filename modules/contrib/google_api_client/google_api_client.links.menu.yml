@@ -1,0 +1,17 @@
+entity.google_api_client.collection:
+  title: 'Google Api Client Listing'
+  route_name: entity.google_api_client.collection
+  description: 'List Google Api Clients'
+  weight: 10
+  parent: system.admin_config_services
+google_api_client.admin.structure.settings:
+  title: Google Api Client Settings
+  description: 'Configure Google Api Client entity'
+  route_name:  google_api_client.google_api_client_settings
+  parent: system.admin_structure
+entity.google_api_service_client.collection:
+  title: 'Google Api Service Accounts Listing'
+  route_name: entity.google_api_service_client.collection
+  description: 'List Google Api Service Accounts'
+  weight: 10
+  parent: system.admin_config_services

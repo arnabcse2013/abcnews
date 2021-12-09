@@ -1,0 +1,101 @@
+<?php
+/**
+ * @file
+ * Install and uninstall functions for the Google api client module.
+ */
+
+/**
+ * Implements hook_requirements().
+ */
+function google_api_client_requirements($phase) {
+  if ($phase != 'runtime') {
+    return [];
+  }
+
+  $library_exists = google_api_client_load_library();
+  $url = \Drupal\Core\Link::fromTextAndUrl(t('here'), \Drupal\Core\Url::fromUri('https://github.com/google/google-api-php-client/releases'))->toString();
+  $documentation = \Drupal\Core\Link::fromTextAndUrl(t('google api php client installation'), \Drupal\Core\Url::fromUri('https://github.com/google/google-api-php-client#installation'))->toString();
+  $version = isset($library_exists['versions']) && !empty($library_exists['versions']) ? array_keys($library_exists['versions']) : array('2.4.0');
+  return [
+    'google-api-php-client' => [
+      'title' => t('Google Api PHP Client'),
+      'value' => $library_exists ? t('Installed') . ' ' . Google_Client::LIBVER : t('Not installed'),
+      'description' => $library_exists ? '' : t('Install version "@version" or latest version of the Google api php client library code (from %here) in a libraries directory such as "libraries/google-api-php-client". You can also use composer to install, read more at %documentation.', ['@version' => $version[0], '%here' => $url, '%documentation' => $documentation]),
+      'severity' => $library_exists ? REQUIREMENT_OK : REQUIREMENT_ERROR,
+    ],
+  ];
+}
+
+/**
+ * Create Entity Type for Google Api Client.
+ */
+function google_api_client_update_8001() {
+  \Drupal::entityTypeManager()->clearCachedDefinitions();
+  $entity_type = \Drupal::entityTypeManager()->getDefinition('google_api_client');
+  \Drupal::entityDefinitionUpdateManager()->installEntityType($entity_type);
+  // Entity table is ready let's copy previous record as first account.
+  $settings = \Drupal\Component\Serialization\Json::decode(\Drupal::config('google_api_client.settings')->get('credentials'));
+  $scopes = \Drupal::config('google_api_client.settings')->get('scopes');
+  $scopes = array_map('trim', explode(PHP_EOL, $scopes));
+
+  //Let's find services for these scopes.
+  $all_services = _google_api_client_google_services_names();
+  $all_services = array_keys($all_services);
+  $all_scopes = google_api_client_google_services_scopes($all_services);
+  $services = [];
+  foreach ($scopes as $scope) {
+    foreach ($all_scopes as $service_name => $service_scopes) {
+      if (in_array($scope, $service_scopes)) {
+        $services[] = $service_name;
+        break;
+      }
+    }
+  }
+  $services = array_unique($services);
+  $token = unserialize(\Drupal::config('google_api_client.tokens')->get('google_access_token'));
+  $token = \Drupal\Component\Serialization\Json::encode($token);
+  $account = [
+    'name' => 'Google Api Client',
+    'client_id' => $settings['web']['client_id'],
+    'client_secret' => $settings['web']['client_secret'],
+    'access_token' => $token,
+    'services' => $services,
+    'access_type' => 1,
+  ];
+  $google_api_client = \Drupal::entityTypeManager()->getStorage('google_api_client')->create($account);
+  if ($token) {
+    $google_api_client->setAuthenticated(TRUE);
+  }
+  $google_api_client->setScopes($scopes);
+  $google_api_client->save();
+
+  // New account created, now delete old config.
+  \Drupal::configFactory()->getEditable('google_api_client.settings')->delete();
+  \Drupal::configFactory()->getEditable('google_api_client.tokens')->delete();
+}
+
+/**
+ * Create Entity Type for Google Api Service Client.
+ */
+function google_api_client_update_8002() {
+  \Drupal::entityTypeManager()->clearCachedDefinitions();
+  $entity_type = \Drupal::entityTypeManager()->getDefinition('google_api_service_client');
+  \Drupal::entityDefinitionUpdateManager()->installEntityType($entity_type);
+}
+
+/**
+ * Create UUID field for Google Api Client.
+ */
+function google_api_client_update_8803() {
+  \Drupal::entityTypeManager()->clearCachedDefinitions();
+  $definition_manager = \Drupal::entityDefinitionUpdateManager();
+
+  // Create a new field definition.
+  $new_uuid_field = \Drupal\Core\Field\BaseFieldDefinition::create('uuid')
+    ->setLabel(t('UUID'))
+    ->setDescription(t('The Google Api Client UUID.'))
+    ->setReadOnly(TRUE);
+
+// Install the new definition.
+  $definition_manager->installFieldStorageDefinition('uuid', 'google_api_client', 'google_api_client', $new_uuid_field);
+}

@@ -1,0 +1,4 @@
+'weather permission 3':
+  title: 'Weather permission'
+  description: 'Weather permission to the users.'
+  restrict access: true

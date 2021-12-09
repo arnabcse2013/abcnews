@@ -1,0 +1,26 @@
+google_api_client.google_api_service_client.*:
+  type: config_entity
+  label: 'Google Api Service Client config'
+  mapping:
+    id:
+      type: string
+      label: 'id'
+    label:
+      type: label
+      label: 'label'
+    auth_config:
+      type: blob
+      label: 'Credentials'
+    access_token:
+      type: blob
+      label: 'Access Token'
+    services:
+      type: sequence
+      label: 'Services'
+      sequence:
+        type: string
+    scopes:
+      type: sequence
+      label: 'Scopes'
+      sequence:
+        type: string

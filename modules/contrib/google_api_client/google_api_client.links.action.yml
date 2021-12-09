@@ -1,0 +1,20 @@
+
+google_api_client.google_api_client_add:
+  # Which route will be called by the link
+  route_name: google_api_client.google_api_client_add
+  title: 'Add Google Api Client Account'
+
+  # Where will the link appear, defined by route name.
+  appears_on:
+    - entity.google_api_client.collection
+    - entity.google_api_client.canonical
+
+google_api_client.google_api_service_client.add_form:
+  # Which route will be called by the link
+  route_name: entity.google_api_service_client.add_form
+  title: 'Add Google Api Service Account'
+
+  # Where will the link appear, defined by route name.
+  appears_on:
+    - entity.google_api_service_client.collection
+    - entity.google_api_service_client.canonical

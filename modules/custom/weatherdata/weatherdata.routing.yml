@@ -1,0 +1,31 @@
+weatherdata.display_table_controller_display:
+  path: '/weatherdata/hello/table'
+  defaults:
+    _controller: '\Drupal\weatherdata\Controller\DisplayTableController::display'
+    _title: 'Weather Information'
+  requirements:
+    _permission: 'access content'
+    
+weatherdata.my_page:
+  path: '/security-area'
+  defaults:
+    _controller: '\Drupal\weatherdata\Controller\ExampleController::myPage'
+    _title: 'My Secured page in Drupal8'
+  requirements: 
+    _permission: 'access content'
+    
+weatherdata.dailystockupdate: 
+  path: '/dailystockupdate' 
+  defaults: 
+    _controller: '\Drupal\weatherdata\Controller\ExampleController::dailystockupdate' 
+    _title: 'Daily Stock update'
+  requirements: 
+    _permission: 'access content' 
+
+weatherdata.dailyweatherupdate: 
+  path: '/dailyweatherupdate' 
+  defaults: 
+    _controller: '\Drupal\weatherdata\Controller\ExampleController::dailyweatherupdate' 
+    _title: 'Daily Weather update'
+  requirements: 
+    _permission: 'access content' 

@@ -1,0 +1,198 @@
+<?php
+/**
+ * @file
+ * Google Api Client for drupal.
+ */
+
+
+/**
+ * Implements hook_help().
+ */
+function google_api_client_help($route_name, \Drupal\Core\Routing\RouteMatchInterface $route_match) {
+  switch ($route_name) {
+    case 'help.page.google_api_client':
+      $path = $GLOBALS['base_url'] . '/' . drupal_get_path('module', 'google_api_client');
+      $output = '<h3>' . t('About') . '</h3>';
+      $output .= '<p>' . t("This module allows you to authenticate with google and use this authentication to carry other api requests. This module will help you to manage accounts, authenticate with google (i.e. get access token) and use this authentication to carry api requests in other modules.") . '</p>';
+      $output .= '<h3>' . t('Uses') . '</h3>';
+      $output .= '<p>' . t("This module allows you to enter google account details like client id, client secret key, developer key, select google services to be enabled and gets the OAuth2 access token from google.  You can also revoke access(unauthenticate) a account.") . '</p>';
+      $output .= '<p>' . t("For more details read the <a href='@url'>README.txt</a> file in the Google Api Client module directory.", ['@url' => "$path/README.txt"]) . '</p>';
+      return $output;
+  }
+}
+
+/**
+ * Implements hook_entity_operation().
+ */
+function google_api_client_entity_operation(\Drupal\Core\Entity\EntityInterface $entity) {
+  if ($entity->getEntityTypeId() == 'google_api_client') {
+    $operations = [];
+    $is_authenticated = $entity->getAuthenticated();
+    $operations['authenticate_revoke'] = [
+      'title' => $is_authenticated ? t('Revoke') : t('Authenticate'),
+      'url' => $is_authenticated ? \Drupal\Core\Url::fromRoute('entity.google_api_client.revoke_form', ['google_api_client' => $entity->getId()]) : \Drupal\Core\Url::fromRoute('google_api_client.callback', ['id' => $entity->getId()]),
+      'weight' => 50,
+    ];
+    return $operations;
+  }
+}
+
+/**
+ * Returns a array services api versions.
+ */
+function google_api_client_google_services_scopes($services, $by_pass_cache = FALSE) {
+  if (!$services)
+    return FALSE;
+  if (!is_array($services))
+    $services = [$services];
+  $cache = \Drupal::cache('google_api_client_scopes')->getMultiple($services);
+  if (!$by_pass_cache && !empty($cache)) {
+    $scopes = [];
+    foreach ($cache as $s => $c) {
+      if ($c->data)
+        $scopes[$s] = $c->data;
+    }
+    return $scopes;
+  }
+  else {
+    \Drupal::cache('google_api_client_scopes')->deleteAll();
+    $services = array_flip($services);
+    $scopes = _google_api_client_read_scope_info();
+    return array_intersect_key($scopes, $services);
+  }
+}
+
+function google_api_client_google_scopes_names(Drupal\Core\Field\BaseFieldDefinition $field, $entity, $cacheable) {
+  $services = _google_api_client_google_services_names();
+  $services = array_keys($services);
+  return google_api_client_google_services_scopes($services);
+}
+/**
+ * Returns a array services api names.
+ */
+function google_api_client_google_services_names($field, $entity, $cacheable) {
+  return _google_api_client_google_services_names();
+}
+
+/**
+ * Function returns service names.
+ *
+ * @param array|string $services
+ *   Pass array of services or comma separated services.
+ *
+ * @return array|mixed|null
+ *   Returns array of names with service machine name as index.
+ */
+function _google_api_client_google_services_names($services = []) {
+  $names = \Drupal::config('google_api_client.google_api_services')->get('google_api_client_google_api_services');
+  if (empty($names)) {
+    _google_api_client_read_scope_info();
+    $names = \Drupal::config('google_api_client.google_api_services')->get('google_api_client_google_api_services');
+  }
+  if (empty($services)) {
+    asort($names);
+    return $names;
+  }
+  else {
+    $service_names = [];
+    if (!is_array($services))
+      $services = explode(",", $services);
+    foreach ($services as $service) {
+      $service_names[trim($service)] = $names[$service];
+    }
+    return $service_names;
+  }
+}
+
+/**
+ * Helper function which reads the installed library and discovery api to build cache for scopes and names.
+ */
+function _google_api_client_read_scope_info() {
+  $path = google_api_client_load_library(TRUE);
+  $path .= 'vendor/google/apiclient-services/src/Google/Service/';
+  $files = scandir($path);
+  $names = array ('abusiveexperiencereport' =>'Abusive Experience Report API','acceleratedmobilepageurl' =>'Accelerated Mobile Pages (AMP) URL API','accessapproval' =>'Access Approval API','accesscontextmanager' =>'Access Context Manager API','adexchangebuyer' =>'Ad Exchange Buyer API','adexchangebuyer2' =>'Ad Exchange Buyer API II','adexperiencereport' =>'Ad Experience Report API','admin' =>'Admin Reports API','adsense' =>'AdSense Management API','adsensehost' =>'AdSense Host API','alertcenter' =>'G Suite Alert Center API','analytics' =>'Google Analytics API','analyticsreporting' =>'Analytics Reporting API','androiddeviceprovisioning' =>'Android Device Provisioning Partner API','androidenterprise' =>'Google Play EMM API','androidmanagement' =>'Android Management API','androidpublisher' =>'Google Play Developer API','appengine' =>'App Engine Admin API','appsactivity' =>'Drive Activity API','bigquery' =>'BigQuery API','bigqueryconnection' =>'BigQuery Connection API','bigquerydatatransfer' =>'BigQuery Data Transfer API','bigqueryreservation' =>'BigQuery Reservation API','bigtableadmin' =>'Cloud Bigtable Admin API','binaryauthorization' =>'Binary Authorization API','blogger' =>'Blogger API','books' =>'Books API','calendar' =>'Calendar API','chat' =>'Hangouts Chat API','civicinfo' =>'Google Civic Information API','classroom' =>'Google Classroom API','cloudasset' =>'Cloud Asset API','cloudbilling' =>'Cloud Billing API','cloudbuild' =>'Cloud Build API','clouddebugger' =>'Stackdriver Debugger API','clouderrorreporting' =>'Stackdriver Error Reporting API','cloudfunctions' =>'Cloud Functions API','cloudidentity' =>'Cloud Identity API','cloudiot' =>'Cloud IoT API','cloudkms' =>'Cloud Key Management Service (KMS) API','cloudprivatecatalog' =>'Cloud Private Catalog API','cloudprivatecatalogproducer' =>'Cloud Private Catalog Producer API','cloudprofiler' =>'Stackdriver Profiler API','cloudresourcemanager' =>'Cloud Resource Manager API','cloudscheduler' =>'Cloud Scheduler API','cloudsearch' =>'Cloud Search API','cloudshell' =>'Cloud Shell API','cloudtasks' =>'Cloud Tasks API','cloudtrace' =>'Stackdriver Trace API','commentanalyzer' =>'Perspective Comment Analyzer API','composer' =>'Cloud Composer API','compute' =>'Compute Engine API','container' =>'Kubernetes Engine API','containeranalysis' =>'Container Analysis API','content' =>'Content API for Shopping','customsearch' =>'CustomSearch API','dataflow' =>'Dataflow API','datafusion' =>'Cloud Data Fusion API','dataproc' =>'Cloud Dataproc API','datastore' =>'Cloud Datastore API','deploymentmanager' =>'Google Cloud Deployment Manager API','dfareporting' =>'DCM/DFA Reporting And Trafficking API','dialogflow' =>'Dialogflow API','digitalassetlinks' =>'Digital Asset Links API','discovery' =>'API Discovery Service','dlp' =>'Cloud Data Loss Prevention (DLP) API','dns' =>'Google Cloud DNS API','docs' =>'Google Docs API','domainsrdap' =>'Domains RDAP API','doubleclickbidmanager' =>'DoubleClick Bid Manager API','doubleclicksearch' =>'Search Ads 360 API','drive' =>'Drive API','driveactivity' =>'Drive Activity API','factchecktools' =>'Fact Check Tools API','fcm' =>'Firebase Cloud Messaging API','file' =>'Cloud Filestore API','firebase' =>'Firebase Management API','firebasedynamiclinks' =>'Firebase Dynamic Links API','firebasehosting' =>'Firebase Hosting API','firebaserules' =>'Firebase Rules API','firestore' =>'Cloud Firestore API','fitness' =>'Fitness','fusiontables' =>'Fusion Tables API','games' =>'Google Play Game Services API','gamesConfiguration' =>'Google Play Game Services Publishing API','gamesManagement' =>'Google Play Game Services Management API','genomics' =>'Genomics API','gmail' =>'Gmail API','groupsmigration' =>'Groups Migration API','groupssettings' =>'Groups Settings API','healthcare' =>'Cloud Healthcare API','homegraph' =>'HomeGraph API','iam' =>'Identity and Access Management (IAM) API','iamcredentials' =>'IAM Service Account Credentials API','iap' =>'Cloud Identity-Aware Proxy API','identitytoolkit' =>'Google Identity Toolkit API','indexing' =>'Indexing API','jobs' =>'Cloud Talent Solution API','kgsearch' =>'Knowledge Graph Search API','language' =>'Cloud Natural Language API','libraryagent' =>'Library Agent API','licensing' =>'Enterprise License Manager API','logging' =>'Stackdriver Logging API','manufacturers' =>'Manufacturer Center API','mirror' =>'Google Mirror API','ml' =>'Cloud Machine Learning Engine','monitoring' =>'Stackdriver Monitoring API','oauth2' =>'Google OAuth2 API','osconfig' =>'Cloud OS Config API','oslogin' =>'Cloud OS Login API','pagespeedonline' =>'PageSpeed Insights API','people' =>'People API','playcustomapp' =>'Google Play Custom App Publishing API','plus' =>'Google+ API','plusDomains' =>'Google+ Domains API','poly' =>'Poly API','proximitybeacon' =>'Proximity Beacon API','pubsub' =>'Cloud Pub/Sub API','redis' =>'Google Cloud Memorystore for Redis API','remotebuildexecution' =>'Remote Build Execution API','replicapool' =>'Replica Pool API','reseller' =>'Enterprise Apps Reseller API','run' =>'Cloud Run API','runtimeconfig' =>'Cloud Runtime Configuration API','safebrowsing' =>'Safe Browsing API','script' =>'Apps Script API','searchconsole' =>'Google Search Console URL Testing Tools API','securitycenter' =>'Cloud Security Command Center API','servicebroker' =>'Service Broker API','serviceconsumermanagement' =>'Service Consumer Management API','servicecontrol' =>'Service Control API','servicemanagement' =>'Service Management API','servicenetworking' =>'Service Networking API','serviceusage' =>'Service Usage API','sheets' =>'Google Sheets API','siteVerification' =>'Google Site Verification API','slides' =>'Google Slides API','sourcerepo' =>'Cloud Source Repositories API','spanner' =>'Cloud Spanner API','speech' =>'Cloud Speech-to-Text API','sqladmin' =>'Cloud SQL Admin API','storage' =>'Cloud Storage JSON API','storagetransfer' =>'Storage Transfer API','streetviewpublish' =>'Street View Publish API','surveys' =>'Surveys API','tagmanager' =>'Tag Manager API','tasks' =>'Tasks API','testing' =>'Cloud Testing API','texttospeech' =>'Cloud Text-to-Speech API','toolresults' =>'Cloud Tool Results API','tpu' =>'Cloud TPU API','translate' =>'Cloud Translation API','urlshortener' =>'URL Shortener API','vault' =>'G Suite Vault API','verifiedaccess' =>'Chrome Verified Access API','videointelligence' =>'Cloud Video Intelligence API','vision' =>'Cloud Vision API','webfonts' =>'Google Fonts Developer API','webmasters' =>'Search Console API','websecurityscanner' =>'Web Security Scanner API','youtube' =>'YouTube Data API','youtubeAnalytics' =>'YouTube Analytics API','youtubereporting' =>'YouTube Reporting API�');
+  $api_names = [];
+  foreach ($files as $file) {
+    if (substr($file, -3) == 'php') {
+      require_once $path . $file;
+
+      $cname = substr($file, 0,-4);
+      $tname = strtolower($cname);
+      if (isset($names[$tname]))
+        $api_names[$tname] = $names[$tname];
+      else
+        $api_names[$tname] = $cname;
+    }
+  }
+
+  $scopes = [];
+  $classes = [];
+  $client = new Google_Client();
+  foreach (get_declared_classes() as $class) {
+    if (is_subclass_of($class, 'Google_Service')) {
+      $temp = new ReflectionClass($class);
+      $instance = $temp->newInstance($client);
+      $aname = $instance->serviceName;
+      if (!isset($api_names[$aname])) {
+        $aname = $temp->getName();
+        $aname = strtolower(str_replace('Google_Service_', '', $aname));
+      }
+      $scopes[$aname] = $temp->getConstants();
+      $classes[$aname] = $class;
+      \Drupal::cache('google_api_client_scopes')->set($aname, $scopes[$aname]);
+    }
+  }
+  \Drupal::configFactory()->getEditable('google_api_client.google_api_services')->set('google_api_client_google_api_services', $api_names)->save();
+  \Drupal::configFactory()->getEditable('google_api_client.google_api_classes')->set('google_api_client_google_api_classes', $classes)->save();
+  return $scopes;
+}
+
+/**
+ * Checks https settings and returns appropriate callback url.
+ */
+function google_api_client_callback_url() {
+  $is_https = \Drupal::request()->isSecure();
+  return \Drupal\Core\Url::fromRoute('google_api_client.callback', [], ['https' => $is_https, 'absolute' => TRUE])->toString();
+}
+
+/**
+ * Function loads the google api php client library.
+ *
+ * @param bool $return_path
+ *   Pass true if you want the path to the library.
+ *
+ * @return bool|string
+ *   Returns lib path if requested else true if loaded.
+ */
+function google_api_client_load_library($return_path = FALSE) {
+  $library = \Drupal::service('library.discovery')->getLibraryByName('google_api_client', 'google-api-php-client');
+  $finder = new \Drupal\Component\ClassFinder\ClassFinder();
+  $file = $finder->findFile('Google_Client');
+  if ($library) {
+    if (class_exists('Google_Client') && strpos($file, 'vendor') !== FALSE) {
+      // Composer install so no problem with lib.
+      if ($return_path) {
+        $pos = strpos($file, 'vendor');
+        if ($pos !== FALSE) {
+          $file = substr($file, 0, $pos);
+        }
+        return $file;
+      }
+      return TRUE;
+    }
+    else {
+      $php_files = array_keys($library['php']);
+      $library_exists = file_exists($php_files[0]);
+      if ($library_exists) {
+        require_once $php_files[0];
+        if ($return_path) {
+          return 'libraries/google-api-php-client/';
+        }
+        return TRUE;
+      }
+    }
+  }
+  return FALSE;
+}
+

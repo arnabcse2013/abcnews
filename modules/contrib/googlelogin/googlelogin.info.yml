@@ -1,0 +1,13 @@
+name: Google Login
+description: 'Social Media Login for Google Account'
+type: module
+core_version_requirement: '^8.9.0 || ^9'
+package: Google
+configure: googlelogin.admin_config
+dependencies:
+  - drupal:google_api_client (>= 8.x-3.0-beta4)
+
+# Information added by Drupal.org packaging script on 2021-04-12
+version: '8.x-4.0-beta1'
+project: 'googlelogin'
+datestamp: 1618216799

@@ -1,0 +1,98 @@
+
+google_api_client.callback:
+  path: 'google_api_client/callback'
+  defaults: { _controller: '\Drupal\google_api_client\Controller\Callback::callbackUrl' }
+  methods:  [GET]
+  requirements:
+    _custom_access: '\Drupal\google_api_client\Controller\Callback::authenticateAccess'
+
+entity.google_api_client.canonical:
+  path: '/google_api_client/{google_api_client}'
+  defaults:
+    # Calls the view controller, defined in the annotation of the google_api_client entity
+    _entity_view: 'google_api_client'
+    _title: 'Google Api Client Accounts'
+  requirements:
+    _permission: 'administer google api settings'
+
+entity.google_api_client.collection:
+  path: '/admin/config/services/google_api_client'
+  defaults:
+    _title: 'Google Accounts'
+    _entity_list: 'google_api_client'
+  requirements:
+    _permission: 'administer google api settings'
+
+google_api_client.google_api_client_add:
+  path: '/admin/config/services/google_api_client/add'
+  defaults:
+    _entity_form: google_api_client.edit
+    _title: 'Add Google Api Client account'
+  requirements:
+    _permission: 'administer google api settings'
+
+entity.google_api_client.edit_form:
+  path: '/admin/config/services/google_api_client/{google_api_client}/edit'
+  defaults:
+    # Calls the form.edit controller, defined in the google_api_client entity.
+    _entity_form: google_api_client.edit
+    _title: 'Edit Google Api Client Account'
+  requirements:
+    _permission: 'administer google api settings'
+
+entity.google_api_client.delete_form:
+  path: '/admin/config/services/google_api_client/{google_api_client}/delete'
+  defaults:
+    # Calls the form.delete controller, defined in the google_api_client entity.
+    _entity_form: google_api_client.delete
+    _title: 'Delete Google Api Client Account'
+  requirements:
+    _permission: 'administer google api settings'
+
+entity.google_api_client.revoke_form:
+  path: '/admin/config/services/google_api_client/{google_api_client}/revoke'
+  defaults:
+    _title: 'Google Account Token Revoke'
+    _entity_form: 'google_api_client.revoke'
+  requirements:
+    _permission: 'administer google api settings'
+
+google_api_client.google_api_client_settings:
+  path: 'admin/structure/google_api_client_settings'
+  defaults:
+    _form: '\Drupal\google_api_client\Form\GoogleApiClientSettingsForm'
+    _title: 'Google Api Client Settings'
+  requirements:
+    _permission: 'administer google api settings'
+
+entity.google_api_service_client.collection:
+  path: '/admin/config/services/google_api_service_client'
+  defaults:
+    _entity_list: 'google_api_service_client'
+    _title: 'Google Service Accounts'
+  requirements:
+    _permission: 'administer google api settings'
+
+entity.google_api_service_client.add_form:
+  path: '/admin/config/services/google_api_service_client/add'
+  defaults:
+    _entity_form: 'google_api_service_client.add'
+    _title: 'Add Google Service Account'
+  requirements:
+    _permission: 'administer google api settings'
+
+entity.google_api_service_client.edit_form:
+  path: '/admin/config/services/google_api_service_client/{google_api_service_client}/edit'
+  defaults:
+    _entity_form: 'google_api_service_client.edit'
+    _title: 'Edit Google Service Account'
+  requirements:
+    _permission: 'administer google api settings'
+
+entity.google_api_service_client.delete_form:
+  path: '/admin/config/system/google_api_service_client/{google_api_service_client}/delete'
+  defaults:
+    _entity_form: 'google_api_service_client.delete'
+    _title: 'Delete Google Service Account'
+  requirements:
+    _permission: 'administer google api settings'

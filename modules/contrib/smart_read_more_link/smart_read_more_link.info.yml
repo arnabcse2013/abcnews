@@ -1,0 +1,11 @@
+name: Smart Read More Link
+description: Formatter that adds a smart "read-more" link only when teaser text differs from full.
+core: 8.x
+core_version_requirement: ^8 || ^9
+type: module
+package: Fields
+
+# Information added by Drupal.org packaging script on 2019-09-20
+version: '8.x-1.7'
+project: 'smart_read_more_link'
+datestamp: 1568963285
